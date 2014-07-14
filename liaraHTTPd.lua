@@ -69,7 +69,7 @@ function file_exists(name)
 		return false
 	end
 end
-testing="tetstsesef"
+
 function getContentType(filename)
 	local ext = getFileext(filename)
 	ext = ext:lower()
@@ -90,21 +90,22 @@ function execLuaFile(content,filename,req,res,args)
 		local headerScriptJS = "function loadJS(loc) print(\"<script type=\\\"text/javascript\\\" src=\"..loc..\"> </script>\") end \n"
 		local headerRedirect = "function redirect(url) js(\"window.location = \"..url..\";\") return nil,303 end \n" -- Not working i think
 		local headerAlert = "function alert(text) js('alert(\"'..(text or \"\")..'\");') end\n"
-		--local headerScriptJS = [[function loadJS(loc) print('<script type="text/javascript" src="'..loc..'"> </script>') end]].."\n"
+		local headerScriptJS = [[function loadJS(loc) print('<script type="text/javascript" src="'..loc..'"> </script>') end]].."\n"
 		--local headerHeader = "function setHeader(k,v) __HEADER[k] = v return true end"
-		--local hasReturn = string.match(content,"return")
-		--if hasReturn then
+		local hasReturn = string.match(content,"return")
+		if hasReturn then
 			local content = content:gsub("return","return __OUTPUT,__HEADER,") or content
-		--end
-		content = content.."\nreturn __OUTPUT,__HEADER"
-		header = headerRequire..headerVars..headerPrint..headerJS..headerGet--..headerRedirect--..headerScriptJS
-		_print(content)
-		local success,body1,newHeader,body2,respcode,mimetype = pcall(loadstring(header.."\n"..content),req,res,args,filename)
+		else
+			content = content.."\n return __OUTPUT,__HEADER"
+		end
+		header = headerRequire..headerVars..headerPrint..headerJS..headerGet..headerRedirect..headerScriptJS
+		_print(header..content)
+		local success,body1,newHeader,body2,respcode,mimetype = pcall(loadstring(header..content),req,res,args,filename)
 		if success then
 			--local success2,body,respcode,mimetype = pcall(func,req,filename)
 			--print(success2,body,respcode,mimetype)
 			--if success2 then
-			return (respcode or 200),(tostring(body1 or "")..tostring(body2 or "nil")),(mimetype or "text/html"),(newHeader or {})
+			return (respcode or 200),(tostring(body1 or "")..tostring(body2 or "")),(mimetype or "text/html"),(newHeader or {})
 			--else
 			--	return 500,"Lua Error: "..tostring(body),"text/plain"
 			--end
