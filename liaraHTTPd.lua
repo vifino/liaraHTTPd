@@ -98,7 +98,7 @@ function execLuaFile(content,filename,req,res,args)
 		else
 			content = content.."\n return __OUTPUT,__HEADER"
 		end
-		header = headerRequire..headerVars..headerPrint..headerJS..headerGet..headerRedirect..headerScriptJS
+		header = headerRequire..headerVars..headerPrint..headerJS..headerGet..headerRedirect..headerScriptJS..headerAlert
 		_print(header..content)
 		local success,body1,newHeader,body2,respcode,mimetype = pcall(loadstring(header..content),req,res,args,filename)
 		if success then
